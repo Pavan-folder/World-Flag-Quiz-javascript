@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Country Quiz | devChallenges.io</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <div class="quiz-container">
+      <div class="score">0/10 Points</div>
+      <h1>Country Quiz</h1>
+      <div class="question-numbers">
+        <span class="question-number-item active" id="qn-1">1</span>
+        <span class="question-number-item" id="qn-2">2</span>
+        <span class="question-number-item" id="qn-3">3</span>
+        <span class="question-number-item" id="qn-4">4</span>
+        <span class="question-number-item" id="qn-5">5</span>
+        <span class="question-number-item" id="qn-6">6</span>
+        <span class="question-number-item" id="qn-7">7</span>
+        <span class="question-number-item" id="qn-8">8</span>
+        <span class="question-number-item" id="qn-9">9</span>
+        <span class="question-number-item" id="qn-10">10</span>
+      </div>
+      <p class="question-text">Which country does this flag belong to?</p>
+      <div class="flag-placeholder" id="flag-image"></div>
+      <div class="options-grid" id="options-container">
+        <button disabled>Option 1</button>
+        <button disabled>Option 2</button>
+        <button disabled>Option 3</button>
+        <button disabled>Option 4</button>
+      </div>
+    </div>
+
+    <script>
+      const scoreDisplay = document.querySelector('.score');
+      const questionNumberItems = document.querySelectorAll('.question-number-item');
+      const questionText = document.querySelector('.question-text');
+      const flagImage = document.getElementById('flag-image');
+      const optionsContainer = document.getElementById('options-container');
+
+      let currentQuestionIndex = 0;
+      let score = 0;
+      let countries = [];
+      let correctCountry = null;
+      const numberOfQuestions = 10;
+
+      function loadQuestion() {
+        optionsContainer.innerHTML = '';
+        questionText.innerHTML = 'Which country does this flag belong to?';
+        flagImage.innerHTML = ''; // Reset any previous image
+        flagImage.style.backgroundImage = '';
+
+        questionNumberItems.forEach((item, index) => {
+          item.classList.remove('active');
+          if (index === currentQuestionIndex) {
+            item.classList.add('active');
+          }
+        });
+
+        if (countries.length > 0) {
+          const shuffledCountries = [...countries].sort(() => Math.random() - 0.5);
+          const optionsData = shuffledCountries.slice(0, 4);
+          const correctIndex = Math.floor(Math.random() * 4);
+          correctCountry = optionsData[correctIndex];
+
+          if (correctCountry.flags?.png) {
+            flagImage.style.backgroundImage = `url('${correctCountry.flags.png}')`;
+          } else if (correctCountry.flags?.svg) {
+            flagImage.style.backgroundImage = `url('${correctCountry.flags.svg}')`;
+          } else {
+            flagImage.style.backgroundImage = 'none';
+          }
+
+          optionsData.forEach(country => {
+            const button = document.createElement('button');
+            button.textContent = country.name.common;
+            button.addEventListener('click', () => checkAnswer(country));
+            optionsContainer.appendChild(button);
+          });
+        } else {
+          questionText.textContent = 'Failed to load countries.';
+        }
+      }
+
+      function checkAnswer(selectedCountry) {
+        const buttons = optionsContainer.querySelectorAll('button');
+        buttons.forEach(button => button.disabled = true);
+
+        const currentQuestionNumberItem = document.getElementById(`qn-${currentQuestionIndex + 1}`);
+
+        if (selectedCountry.name.common === correctCountry.name.common) {
+          buttons.forEach(button => {
+            if (button.textContent === selectedCountry.name.common) {
+              button.classList.add('correct');
+            }
+          });
+          score++;
+        } else {
+          buttons.forEach(button => {
+            if (button.textContent === selectedCountry.name.common) {
+              button.classList.add('incorrect');
+            }
+            if (button.textContent === correctCountry.name.common) {
+              button.classList.add('correct');
+            }
+          });
+        }
+
+        scoreDisplay.innerHTML = `${score}/${numberOfQuestions} Points`;
+
+        if (currentQuestionNumberItem) {
+          currentQuestionNumberItem.classList.add('completed');
+        }
+
+        setTimeout(() => {
+          currentQuestionIndex++;
+          if (currentQuestionIndex < numberOfQuestions && countries.length >= 4) {
+            loadQuestion();
+          } else {
+            endQuiz();
+          }
+        }, 1500);
+      }
+
+      function endQuiz() {
+        questionText.innerHTML = `🎉 Quiz Finished! Your final score is <strong>${score}/${numberOfQuestions}</strong>`;
+        optionsContainer.innerHTML = '';
+
+        // Show congrats image inside flag placeholder
+        flagImage.innerHTML = '<img src="./resources/congrats.png" alt="Congratulations">';
+        flagImage.style.backgroundImage = 'none';
+      }
+
+      fetch('https://restcountries.com/v3.1/all')
+        .then(res => res.json())
+        .then(data => {
+          countries = data;
+          if (countries.length >= 4) {
+            loadQuestion();
+          } else {
+            questionText.textContent = 'Not enough countries loaded to start the quiz.';
+          }
+        })
+        .catch(error => {
+          console.error('Fetch error:', error);
+          questionText.textContent = 'Failed to load countries.';
+        });
+    </script>
+  </body>
+</html>
+
+
