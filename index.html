@@ -14,7 +14,7 @@
 
     body {
       min-height: 100vh;
-      background: #f0f4f8;
+      background: url(bg.jpg);
       font-family: 'Poppins', sans-serif;
       display: flex;
       justify-content: center;
@@ -23,12 +23,12 @@
     }
 
     .quiz-container {
-      background: #ffffff;
+      background: #1e293b;
       border-radius: 24px;
       padding: 40px;
-      box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
+      box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.4);
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       text-align: center;
       position: relative;
     }
@@ -36,31 +36,20 @@
     h1 {
       font-size: 28px;
       margin-bottom: 30px;
-      color: #333;
-    }
-
-    .flag-wrapper {
-      width: 120px;
-      height: 120px;
-      background: #f9fafb;
-      border-radius: 50%;
-      margin: 0 auto 30px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    .flag-wrapper img {
-      width: 80%;
-      height: 80%;
-      object-fit: contain;
+      color: #fff;
     }
 
     .question-text {
-      font-size: 20px;
+      font-size: 22px;
       margin-bottom: 30px;
-      color: #475569;
+      color: #cbd5e1;
+    }
+
+    .question-text img#question-flag-icon {
+      width: 20px;
+      height: auto;
+      vertical-align: middle;
+      margin: 0 5px;
     }
 
     .options-grid {
@@ -70,31 +59,30 @@
     }
 
     button.option-btn {
-      background: #f1f5f9;
+      background: #334155;
       border: 2px solid transparent;
       border-radius: 12px;
       padding: 15px;
       font-size: 16px;
       font-weight: 500;
-      color: #334155;
+      color: #cbd5e1;
       cursor: pointer;
       transition: all 0.3s;
     }
 
     button.option-btn:hover:not(:disabled) {
-      background: #e2e8f0;
+      background: #475569;
     }
 
     button.correct {
-      background: #d1fae5;
-      border-color: #10b981;
-      color: #065f46;
+      background: #4caf50;
+      color: white;
     }
 
     button.incorrect {
-      background: #fee2e2;
+      background: linear-gradient(90deg, #f43f5e, #8b5cf6);
       border-color: #ef4444;
-      color: #991b1b;
+      color: #7f1d1d;
     }
 
     button:disabled {
@@ -108,7 +96,7 @@
       color: white;
       border: none;
       border-radius: 12px;
-      padding: 12px 20px;
+      padding: 12px 24px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
@@ -119,119 +107,198 @@
       position: absolute;
       top: 20px;
       right: 30px;
-      background: #facc15;
-      color: #000;
+      background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+      color: white;
       padding: 8px 16px;
       border-radius: 999px;
       font-weight: 600;
       font-size: 14px;
+    }
+
+    .question-counter {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .counter-item {
+      width: 30px;
+      height: 30px;
+      background: #334155;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .counter-item.active {
+      background: linear-gradient(135deg, #f43f5e, #8b5cf6);
+      color: white;
+    }
+
+    .checkmark {
+      width: 20px;
+      height: 20px;
+      margin-left: 10px;
+      vertical-align: middle;
     }
   </style>
 </head>
 
 <body>
   <div class="quiz-container">
-    <div class="score-display">0/10</div>
-    <h1>Country Quiz 🌍</h1>
+    <div class="score-display">0/10 Points</div>
+    <h1>Country Quiz</h1>
 
-    <div class="flag-wrapper" id="flag-wrapper">
-      <img id="flag-image" src="" alt="Country flag">
+    <div class="question-counter" id="question-counter">
+      </div>
+
+    <div class="question-text" id="question-text">
+      Which country does this flag
+      <img id="question-flag-icon" src="" alt="Question Flag">
+      belong to?
     </div>
-
-    <div class="question-text" id="question-text">Which country does this flag belong to?</div>
-
     <div class="options-grid" id="options-container">
-      <!-- Options inserted dynamically -->
-    </div>
+      </div>
 
     <button class="next-btn" id="next-btn">Next</button>
   </div>
 
-<script>
-  const scoreDisplay = document.querySelector('.score-display');
-  const flagImage = document.getElementById('flag-image');
-  const optionsContainer = document.getElementById('options-container');
-  const nextBtn = document.getElementById('next-btn');
-  const questionText = document.getElementById('question-text');
+  <script>
+    const scoreDisplay = document.querySelector('.score-display');
+    const optionsContainer = document.getElementById('options-container');
+    const nextBtn = document.getElementById('next-btn');
+    const questionText = document.getElementById('question-text');
+    const questionCounter = document.getElementById('question-counter');
+    const questionFlagIcon = document.getElementById('question-flag-icon'); // Get the flag icon
 
-  let countries = [];
-  let currentQuestionIndex = 0;
-  let score = 0;
-  const numberOfQuestions = 10;
-  let correctCountry = null;
+    let countries = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    const numberOfQuestions = 10;
+    let correctCountry = null;
 
-  function shuffle(array) {
-    return array.sort(() => Math.random() - 0.5);
-  }
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
 
-  function loadQuestion() {
-    optionsContainer.innerHTML = '';
-    nextBtn.style.display = 'none';
+    function createQuestionCounter() {
+      questionCounter.innerHTML = '';
+      for (let i = 1; i <= numberOfQuestions; i++) {
+        const circle = document.createElement('div');
+        circle.className = 'counter-item';
+        if (i === 1) circle.classList.add('active');
+        circle.textContent = i;
+        questionCounter.appendChild(circle);
+      }
+    }
 
-    const shuffledCountries = shuffle([...countries]).slice(0, 4);
-    correctCountry = shuffledCountries[Math.floor(Math.random() * 4)];
-
-    flagImage.src = correctCountry.flags.png;
-
-    shuffledCountries.forEach(country => {
-      const button = document.createElement('button');
-      button.className = 'option-btn';
-      button.textContent = country.name.common;
-      button.addEventListener('click', () => selectAnswer(button, country));
-      optionsContainer.appendChild(button);
-    });
-  }
-
-  function selectAnswer(button, selectedCountry) {
-    const buttons = document.querySelectorAll('.option-btn');
-    buttons.forEach(btn => btn.disabled = true);
-
-    if (selectedCountry.name.common === correctCountry.name.common) {
-      button.classList.add('correct');
-      score++;
-    } else {
-      button.classList.add('incorrect');
-      buttons.forEach(btn => {
-        if (btn.textContent === correctCountry.name.common) {
-          btn.classList.add('correct');
-        }
+    function updateQuestionCounter() {
+      const circles = document.querySelectorAll('.counter-item');
+      circles.forEach((circle, index) => {
+        circle.classList.toggle('active', index === currentQuestionIndex);
       });
     }
 
-    scoreDisplay.textContent = `${score}/${numberOfQuestions}`;
-    nextBtn.style.display = 'inline-block';
-  }
+    function loadQuestion() {
+      optionsContainer.innerHTML = '';
+      nextBtn.style.display = 'none';
 
-  nextBtn.addEventListener('click', () => {
-    currentQuestionIndex++;
-    if (currentQuestionIndex < numberOfQuestions) {
-      loadQuestion();
-    } else {
-      endQuiz();
+      const shuffledCountries = shuffle([...countries]).slice(0, 4);
+      correctCountry = shuffledCountries[Math.floor(Math.random() * 4)];
+
+      // Set the source for the flag icon in the question text
+      questionFlagIcon.src = correctCountry.flags.png;
+
+      shuffledCountries.forEach(country => {
+        const button = document.createElement('button');
+        button.className = 'option-btn';
+        button.textContent = country.name.common;
+        button.addEventListener('click', () => selectAnswer(button, country));
+        optionsContainer.appendChild(button);
+      });
+
+      updateQuestionCounter();
     }
-  });
 
-  function endQuiz() {
-    questionText.innerHTML = `🎉 You scored <strong>${score}/${numberOfQuestions}</strong>`;
-    optionsContainer.innerHTML = '';
-    nextBtn.style.display = 'none';
-    flagImage.src = 'congrats.png';
-  }
+    function selectAnswer(button, selectedCountry) {
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach(btn => btn.disabled = true);
 
-  fetch('https://restcountries.com/v3.1/all')
-    .then(res => res.json())
-    .then(data => {
-      countries = data;
-      if (countries.length >= 4) {
-        loadQuestion();
+      // Clear existing checkmarks (if any)
+      const existingCheckmarks = document.querySelectorAll('.checkmark');
+      existingCheckmarks.forEach(img => img.remove());
+
+      if (selectedCountry.name.common === correctCountry.name.common) {
+        // If correct answer
+        button.classList.add('correct');
+        score++;
+        let checkmarkImage = document.createElement('img');
+        checkmarkImage.className = 'checkmark';
+        checkmarkImage.src = 'Check_round_fill.svg'; // Correct checkmark
+        button.appendChild(checkmarkImage); // Add checkmark to the correct button
+      } else {
+        // If incorrect answer
+        button.classList.add('incorrect');
+        let wrongCheckmark = document.createElement('img');
+        wrongCheckmark.className = 'checkmark';
+        wrongCheckmark.src = 'Close_round_fill.svg'; // Wrong answer image
+        button.appendChild(wrongCheckmark);
+
+        buttons.forEach(btn => {
+          if (btn.textContent === correctCountry.name.common) {
+            btn.classList.add('correct');
+            // Add checkmark to the correct option
+            let correctCheckmark = document.createElement('img');
+            correctCheckmark.className = 'checkmark';
+            correctCheckmark.src = 'Check_round_fill.svg';
+            btn.appendChild(correctCheckmark);
+          }
+        });
       }
-    })
-    .catch(err => {
-      console.error('Error fetching countries:', err);
-    });
-</script>
+
+      scoreDisplay.textContent = `${score}/${numberOfQuestions} Points`;
+
+      // Automatically move to the next question after 2 seconds
+      setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < numberOfQuestions) {
+          loadQuestion();
+        } else {
+          endQuiz();
+        }
+      }, 2000);
+    }
+
+    function endQuiz() {
+      questionText.innerHTML = `🎉 You scored <strong>${score}/${numberOfQuestions}</strong>`;
+      optionsContainer.innerHTML = '';
+      nextBtn.style.display = 'none';
+    }
+
+    fetch('https://restcountries.com/v3.1/all')
+      .then(res => res.json())
+      .then(data => {
+        countries = data;
+        if (countries.length >= 4) {
+          createQuestionCounter();
+          loadQuestion();
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching countries:', err);
+      });
+  </script>
+
+
 </body>
 </html>
+
+
 
 
 
