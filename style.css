@@ -45,7 +45,11 @@
         font-size: 14px;
         font-weight: 600;
       }
-
+#flag-image{
+width: 30px;
+height: 20px;
+border-radius: none;
+}
       .question-numbers {
         display: flex;
         gap: 10px;
@@ -87,7 +91,7 @@
         height: 100px;
         background: #4b5563;
         margin: 0 auto 20px;
-        border-radius: 8px;
+       
         background-size: cover;
         background-position: center;
         display: flex;
